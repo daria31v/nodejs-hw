@@ -1,19 +1,69 @@
-// const fs = require('fs/promises')
+const fs = require("fs/promises");
+const path = require("path");
+const { nanoid } = require("nanoid");
+const chalk = require("chalk");
 
-const listContacts = async () => {}
+const contactsPath = path.resolve("./models/contacts.json");
+// console.log(contactsPath);
 
-const getContactById = async (contactId) => {}
+async function readAllContacts() {
+  const data = await fs.readFile(contactsPath, "utf8");
+  return JSON.parse(data);
+}
 
-const removeContact = async (contactId) => {}
+function updateContacts(contacts) {
+  return fs.writeFile(contactsPath, JSON.stringify(contacts), "utf8");
+}
 
-const addContact = async (body) => {}
+const listContacts = async () => {
+  return await readAllContacts();
+};
 
-const updateContact = async (contactId, body) => {}
+const getContactById = async (contactId) => {
+  const contacts = await readAllContacts();
+  const contact = contacts.find((contact) => contact.id === contactId);
+  // console.log(contact);
+  // if (!contact) {
+  //   console.log(chalk.red(`Sorry there is no contact with ${contactId}.`));
+  // }
+  if (contact) {
+    console.log(chalk.greenBright(`Contact: ${contactId} was finded.`));
+    return contact || null;
+  }
+};
+
+const removeContact = async (contactId) => {
+  const contacts = await readAllContacts();
+
+  const contact = await contacts.find((contact) => contact.id === contactId);
+
+  if (!contact) {
+    console.log(`Sorry there is no contact with ${contactId}.`);
+  }
+
+  const newListContacts = await contacts.filter(
+    (contact) => contact.id !== contactId
+  );
+
+  await updateContacts(newListContacts);
+  return console.log(
+    chalk.green(`Succsess! Contact ${contactId} was removed.`)
+  );
+};
+
+const addContact = async (name, email, phone) => {
+  const contacts = await readAllContacts();
+
+  const newContact = { id: nanoid(21), name, email, phone };
+  contacts.push(newContact);
+  await updateContacts(contacts);
+  return newContact && console.log(chalk.bgBlueBright(`Contact was added!`));
+};
 
 module.exports = {
   listContacts,
   getContactById,
   removeContact,
   addContact,
-  updateContact,
-}
+  updateContacts,
+};
