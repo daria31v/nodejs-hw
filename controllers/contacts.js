@@ -2,33 +2,37 @@ const contacts = require("../models/contacts.js");
 const { HttpError, ctrWrapper } = require("../helpers");
 
 
-const getAll = async (req, res, next) => {
+const getAll = async (req, res) => {
+  
     const listAll = await contacts.listContacts();
     res.json(listAll);
 };
 const getById = async (req, res) => {
     const { contactId } = req.params;
     const dataId = await contacts.getContactById(contactId);
-    // console.log(data);
+    
     if (!dataId) {
       throw HttpError(404, "Not found");
     }
     res.json(dataId);
  };
 const addNewContact = async (req, res) => {
-    const data = await contacts.addContact(req.body);
+     const data = await contacts.addContact(req.body);
+    console.log(data);
     res.status(201).json(data);
  
 };
-const updateById = async (req, res, next) => {
+const updateById = async (req, res) => {
+    console.log(req, res)   
     const { id } = req.params;
-    const resultUpdate = await contacts.updateContacts(id, req.body);
+     const resultUpdate = await contacts.updateContacts(id, req.body);
+     console.log(resultUpdate);
     if (!resultUpdate) {
       throw HttpError(404, "Not found");
     }
     res.json(resultUpdate);  
 };
-const deleteById = async (req, res, next) => {
+const deleteById = async (req, res) => {
     console.log(req.params);
     const { id } = req.params;
     const deleteContact = await contacts.removeContact(id);
