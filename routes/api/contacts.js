@@ -5,20 +5,18 @@ const controllers = require("../../controllers/contacts");
 const {validateBody} = require('../../middlewares');
 
 const schemas = require("../../schemas/contact");
-
+const jsonParser = express.json();
 const router = express.Router();
 
 router.get("/", controllers.getAll);
 
 router.get("/:contactId", controllers.getById);
 
-router.post("/", 
-validateBody(schemas.schemaJoi), 
+router.post("/", jsonParser, validateBody(schemas.schemaJoi), 
 controllers.addNewContact);
 
 
-router.put("/:contactId", 
-validateBody(schemas.schemaJoi), 
+router.put("/:contactId", jsonParser, validateBody(schemas.schemaJoi), 
 controllers.updateById);
 
 router.delete("/:contactId", controllers.deleteById);

@@ -3,16 +3,14 @@ const path = require("path");
 const { nanoid } = require("nanoid");
 const chalk = require("chalk");
 
-const contactsPath = path.resolve("./models/contacts.json");
-// console.log(contactsPath);
+const contactsPath = path.join(__dirname, "contacts.json");
 
 async function readAllContacts() {
   const data = await fs.readFile(contactsPath, "utf8");
   return JSON.parse(data);
 }
-
-function updateContacts(contacts) {
-  return fs.writeFile(contactsPath, JSON.stringify(contacts), "utf8");
+function updateAllContacts(contacts) {
+  return fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2), "utf8");
 }
 
 const listContacts = async () => {
@@ -20,6 +18,7 @@ const listContacts = async () => {
 };
 
 const getContactById = async (contactId) => {
+  console.log(contactId);
   const contacts = await readAllContacts();
   const contact = contacts.find((contact) => contact.id === contactId);
   console.log(contact);
@@ -32,34 +31,36 @@ const getContactById = async (contactId) => {
   }
 };
 
-const removeContact = async (contactId) => {
+const addContact = async (data) => {
   const contacts = await readAllContacts();
-
-  const contact = await contacts.find((contact) => contact.id === contactId);
-
-  if (!contact) {
-    console.log(`Sorry there is no contact with ${contactId}.`);
+  const newContact = { id: nanoid(21), ...data };
+  contacts.push(newContact);
+  await updateAllContacts(contacts);
+  return newContact && console.log(chalk.bgBlueBright(`Contact was added!`));
+};
+const removeContact = async (contactId) => {
+  const id = contactId;
+  const contacts = await readAllContacts();
+  const index = contacts.findIndex((item) => item.id === id);
+  if (index === -1) {
+    return null;
   }
-
-  const newListContacts = await contacts.filter(
-    (contact) => contact.id !== contactId
-  );
-
-  await updateContacts(newListContacts);
-  return console.log(
-    chalk.green(`Succsess! Contact ${contactId} was removed.`)
-  );
+  const [newListContacts] = contacts.splice(index, 1);
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2), "utf8");
+  return newListContacts;
 };
 
-const addContact = async (contact) => {
+const updateContact = async (contactId, data) => {
+  const id = contactId;
   const contacts = await readAllContacts();
-  console.log(contacts);
-  const newContact = { id: nanoid(21), contact };
-  console.log(newContact);
-  
-  contacts.push(newContact);
-  await updateContacts(contacts);
-  return newContact && console.log(chalk.bgBlueBright(`Contact was added!`));
+  const index = contacts.findIndex((item) => item.id === id);
+  if (index === -1) {
+    return null;
+  }
+  contacts[index] = { id, ...data };
+  console.log(contacts[index]);
+  await updateAllContacts(contacts);
+  return contacts[index];
 };
 
 module.exports = {
@@ -67,5 +68,5 @@ module.exports = {
   getContactById,
   removeContact,
   addContact,
-  updateContacts,
+  updateContact,
 };
