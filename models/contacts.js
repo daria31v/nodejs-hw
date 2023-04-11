@@ -8,10 +8,11 @@ const contactsPath = path.join(__dirname, "contacts.json");
 async function readAllContacts() {
   const data = await fs.readFile(contactsPath, "utf8");
   return JSON.parse(data);
-}
+};
+
 function updateAllContacts(contacts) {
   return fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2), "utf8");
-}
+};
 
 const listContacts = async () => {
   return await readAllContacts();
@@ -24,20 +25,17 @@ const getContactById = async (contactId) => {
   if (!contact) {
     console.log(chalk.red(`Sorry there is no contact with ${contactId}.`));
   }
-  if (contact) {
-    console.log(chalk.greenBright(`Contact: ${contactId} was finded.`));
-    return contact || null;
-  }
+  return contact || null  
 };
 
 const addContact = async (data) => {
   const contacts = await readAllContacts();
   const newContact = { id: nanoid(21), ...data };
-
   contacts.push(newContact);
   await updateAllContacts(contacts);
-  return newContact && console.log(chalk.bgBlueBright(`Contact was added!`));
+  return newContact 
 };
+
 const removeContact = async (contactId) => {
   const id = contactId;
   const contacts = await readAllContacts();
@@ -46,8 +44,8 @@ const removeContact = async (contactId) => {
     return null;
   }
   const [newListContacts] = contacts.splice(index, 1);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2), "utf8");
-  return newListContacts;
+  await updateAllContacts(contacts);
+  return newListContacts
 };
 
 const updateContact = async (contactId, data) => {
