@@ -18,10 +18,9 @@ const listContacts = async () => {
 };
 
 const getContactById = async (contactId) => {
-  console.log(contactId);
   const contacts = await readAllContacts();
   const contact = contacts.find((contact) => contact.id === contactId);
-  console.log(contact);
+
   if (!contact) {
     console.log(chalk.red(`Sorry there is no contact with ${contactId}.`));
   }
@@ -34,6 +33,7 @@ const getContactById = async (contactId) => {
 const addContact = async (data) => {
   const contacts = await readAllContacts();
   const newContact = { id: nanoid(21), ...data };
+
   contacts.push(newContact);
   await updateAllContacts(contacts);
   return newContact && console.log(chalk.bgBlueBright(`Contact was added!`));
@@ -58,7 +58,7 @@ const updateContact = async (contactId, data) => {
     return null;
   }
   contacts[index] = { id, ...data };
-  console.log(contacts[index]);
+
   await updateAllContacts(contacts);
   return contacts[index];
 };

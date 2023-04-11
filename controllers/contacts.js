@@ -24,9 +24,9 @@ const addNewContact = async (req, res) => {
 };
 
 const updateById = async (req, res) => {
-  const id  = req.params.contactId;
+  const id = req.params.contactId;
   const resultUpdate = await contacts.updateContact(id, req.body);
-  
+
   if (!resultUpdate) {
     throw HttpError(400, "missing fields");
   }
@@ -35,9 +35,9 @@ const updateById = async (req, res) => {
 
 const deleteById = async (req, res) => {
   const id = req.params.contactId;
-  console.log(id);
+
   const deleteContact = await contacts.removeContact(id);
-  console.log(deleteContact);
+
   if (!deleteContact) {
     throw HttpError(404, "Not found");
   }
