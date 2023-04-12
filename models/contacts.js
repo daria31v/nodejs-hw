@@ -50,12 +50,13 @@ const removeContact = async (contactId) => {
 
 const updateContact = async (contactId, data) => {
   const id = contactId;
+  const {name, email, phone} = data;
   const contacts = await readAllContacts();
   const index = contacts.findIndex((item) => item.id === id);
   if (index === -1) {
     return null;
   }
-  contacts[index] = { id, ...data };
+  contacts[index] = { id, name, email, phone };
 
   await updateAllContacts(contacts);
   return contacts[index];

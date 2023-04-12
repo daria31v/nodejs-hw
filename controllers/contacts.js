@@ -17,24 +17,27 @@ const getById = async (req, res) => {
 };
 
 const addNewContact = async (req, res) => {
-  if (!req.body.name || !req.body.email || !req.body.phone) {
-    throw HttpError(400, { message: "missing required name field" });
-  }
+  // console.log(req.body);
   const { name, email, phone } = req.body;
   const data = await contacts.addContact({ name, email, phone });
-  if (!data) {
-    throw HttpError(404, "Not found");
-  }
+  console.log(data);
   res.status(201).json(data);
 };
 
 const updateById = async (req, res) => {
-  if (!req.body) {
-    throw HttpError(400, { message: "missing fields" });
-  }
+  // console.log(req.params);
+  // console.log(
+  //   req.body
+  // );
+  // if (!req.body) {
+  //   throw HttpError(400, { message: "missing fields" });
+  // }
   const id = req.params.contactId;
+  // const name = req.params.name;
+  // const email = req.params.email;
+  // const phone = req.params.phone;
   const resultUpdate = await contacts.updateContact(id, req.body);
-
+// console.log(resultUpdate);
   if (!resultUpdate) {
     throw HttpError(404, "Not found");
   }
