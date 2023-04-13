@@ -51,6 +51,7 @@ const removeContact = async (contactId) => {
 const updateContact = async (contactId, data) => {
   const id = contactId;
   const existingContact = await getContactById(id);
+  // eslint-disable-next-line no-unused-vars
   const { name, email, phone } = data;
   const contacts = await readAllContacts();
   const index = contacts.findIndex((item) => item.id === id);
