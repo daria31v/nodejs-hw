@@ -14,7 +14,7 @@ const schemaJoiUpdate = Joi.object({
   email: Joi.string()
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "ua"] } }),
   phone: Joi.number()
-}).min(1);
+});
 
 
 module.exports = { schemaJoiAdd, schemaJoiUpdate };
