@@ -5,26 +5,40 @@ const { validateBodyNewContact } = require("../../middlewares");
 const {
   validateBodyUpdateContact,
 } = require("../../middlewares");
+const { isValidId } = require("../../middlewares");
 
-const schemas = require("../../schemas/contact");
+const { schemas } = require("../../models/contact");
 
 const router = express.Router();
 
 router.get("/", controllers.getAll);
 
-router.get("/:contactId", controllers.getById);
+router.get("/:contactId", 
+// isValidId, 
+controllers.getById);
 
-router.post("/",
+router.post(
+  "/",
   validateBodyNewContact(schemas.schemaJoiAdd),
   controllers.addNewContact
 );
 
 router.put(
-  "/:contactId",
+  "/:contactId", 
+  // isValidId,
   validateBodyUpdateContact(schemas.schemaJoiUpdate),
   controllers.updateById
 );
 
-router.delete("/:contactId", controllers.deleteById);
+router.patch(
+  "/:contactId/favorite", 
+  // isValidId,
+  // validateBodyUpdateContact(schemas.schemaUpdateFavorite),
+  controllers.updateFavorite
+);
+
+router.delete("/:contactId", 
+// isValidId, 
+controllers.deleteById);
 
 module.exports = router;
