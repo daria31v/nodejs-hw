@@ -3,11 +3,9 @@ const { HttpError } = require("../helpers");
 const validateBodyUpdateContact = (schema) => {
   const func = (req, res, next) => {
     const { error } = schema.validate(req.body);
-
     if (error) {
-      throw HttpError(404, "Not Found");
+      throw HttpError(400, "missing field favorite");
     }
-
     next();
   };
   func.schema = schema;

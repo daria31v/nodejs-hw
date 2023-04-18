@@ -27,7 +27,7 @@ contactSchema.post("save", handleMongooseError);
 const schemaJoiAdd = Joi.object({
   name: Joi.string().required(),
   email: Joi.string()
-    // .email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "ua"] } })
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "ua"] } })
     .required(),
   phone: Joi.number().required(),
   favorite: Joi.boolean(),
@@ -35,11 +35,10 @@ const schemaJoiAdd = Joi.object({
 
 const schemaJoiUpdate = Joi.object({
   name: Joi.string(),
-  email: Joi.string(),
-  // email({
-  //   minDomainSegments: 2,
-  //   tlds: { allow: ["com", "net", "ua"] },
-  // })
+  email: Joi.string().
+  email({
+    minDomainSegments: 2,
+    tlds: { allow: ["com", "net", "ua"]}}),
   phone: Joi.number(),
   favorite: Joi.boolean(),
 });

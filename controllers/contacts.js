@@ -1,9 +1,6 @@
 const { Contact } = require("../models/contact");
 
-const {
-  HttpError,
-  ctrWrapper,
-} = require("../helpers");
+const { HttpError, ctrWrapper } = require("../helpers");
 
 const getAll = async (req, res) => {
   const listAll = await Contact.find();
@@ -27,39 +24,33 @@ const addNewContact = async (req, res) => {
 
 const updateById = async (req, res) => {
   const id = req.params.contactId;
-  const resultUpdate = await Contact.findByIdAndUpdate(id, req.body, {new: true});
-
+  const resultUpdate = await Contact.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
   const { name, email, phone } = req.body;
-
   if (!resultUpdate) {
     throw HttpError(404, "Not found");
-  }
+  };
   if (!name && !email && !phone) {
     throw HttpError(400, "missing fields");
-  }
+  };
   res.status(200).json(resultUpdate);
 };
 
 const updateFavorite = async (req, res) => {
   const id = req.params.contactId;
-  const resultUpdate = await Contact.findByIdAndUpdate(id, req.body, {new: true});
-
-  const { favorite } = req.body;
-
+  const resultUpdate = await Contact.findByIdAndUpdate(id, req.body, {
+    new: true,
+  });
   if (!resultUpdate) {
     throw HttpError(404, "Not found");
-  }
-  if (!favorite) {
-    throw HttpError(400, "missing fields");
-  }
+  };
   res.status(200).json(resultUpdate);
 };
-
 
 const deleteById = async (req, res) => {
   const id = req.params.contactId;
   const deleteContact = await Contact.findByIdAndRemove(id);
-
   if (!deleteContact) {
     throw HttpError(404, "Not found");
   }
