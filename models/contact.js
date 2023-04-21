@@ -14,16 +14,17 @@ const contactSchema = new Schema(
     phone: {
       type: String,
     },
-    // owner: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: 'user',
-    // }
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      require: true,
+    },
     favorite: {
       type: Boolean,
       default: false,
     },
   },
-  { versionKey: false}
+  { versionKey: false }
 );
 
 contactSchema.post("save", handleMongooseError);
@@ -35,14 +36,15 @@ const schemaJoiAdd = Joi.object({
     .required(),
   phone: Joi.number().required(),
   favorite: Joi.boolean(),
+
 });
 
 const schemaJoiUpdate = Joi.object({
   name: Joi.string(),
-  email: Joi.string().
-  email({
+  email: Joi.string().email({
     minDomainSegments: 2,
-    tlds: { allow: ["com", "net", "ua"]}}),
+    tlds: { allow: ["com", "net", "ua"] },
+  }),
   phone: Joi.number(),
   favorite: Joi.boolean(),
 });

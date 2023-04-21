@@ -39,6 +39,7 @@ const login = async (req, res) => {
     id: user._id,
   };
   const token = jwt.sign(playload, SECRET_KEY, { expiresIn: "3d" });
+  await User.findByIdAndUpdate(user._id, {token})
 
   res.status(200).json({
     token,
@@ -49,7 +50,38 @@ const login = async (req, res) => {
   });
 };
 
+const getCurrent = async (req, res) => {
+  const { email, subscription, token } = req.user;
+  
+  if (!token) {
+      throw HttpError(401, "Not authorized");
+    }
+  res.json({ email, subscription });
+};
+
+const logout = async (req, res) => {
+  const {_id } = req.user;
+  await User.findByIdAndRemove(_id, { token: "" });
+
+  // if (!_id) {
+  //   throw HttpError(401, "Not authorized");
+  // }
+  res.status(204)
+};
+
+const updateSubscription = async (req, res) => {
+  const {_id} = req.user;
+  const result = await User.findByIdAndUpdate(_id, req.body, {new: true});
+  if(!result){
+    throw HttpError(404)
+  }
+  res.status(200).json(result)
+}
+
 module.exports = {
   register: ctrWrapper(register),
   login: ctrWrapper(login),
+  logout: ctrWrapper(logout),
+  getCurrent: ctrWrapper(getCurrent),
+  updateSubscription: ctrWrapper(updateSubscription)
 };
