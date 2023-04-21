@@ -4,7 +4,7 @@ const { handleMongooseError } = require("../helpers");
 
 const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
-// const tokenRegexp = "";
+
 const userTarif = ["starter", "pro", "business"];
 
 const userSchema = new Schema(
@@ -25,7 +25,7 @@ const userSchema = new Schema(
       enum: userTarif,
       default: "starter",
     },
-    // token: String,
+    token: String,
   },
   { versionKey: false }
 );
@@ -36,7 +36,7 @@ const schemaJoiRegister = Joi.object({
     password: Joi.string().min(6).required(),
     email: Joi.string().pattern(emailRegexp).required(),
     subscription: Joi.string().validate(...userTarif),
-    // token: Joi.string().pattern(tokenRegexp).required()
+    token: Joi.string().required()
 })
 
 const schemaJoiLogin = Joi.object({

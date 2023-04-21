@@ -3,6 +3,7 @@ const { HttpError } = require("../helpers");
 const validateBodyNewUser = (schema) => {
   const validation = (req, res, next) => {
     const newUser = req.body;
+    console.log(newUser);
     const { error } = schema.validate(newUser);
     const fields = Object.keys(newUser);
     const CONSTANT = ["email", "password"];
