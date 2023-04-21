@@ -36,7 +36,7 @@ const schemaJoiRegister = Joi.object({
     password: Joi.string().min(6).required(),
     email: Joi.string().pattern(emailRegexp).required(),
     subscription: Joi.string().validate(...userTarif),
-    token: Joi.string().required()
+    token: Joi.string()
 })
 
 const schemaJoiLogin = Joi.object({
