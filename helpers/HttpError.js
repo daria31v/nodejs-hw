@@ -1,9 +1,9 @@
 const errorMessageList = {
     400: "",
     401: "Not authorized",
-    403: "",
+    403: "Forbidden",
     404: "Not found",
-    409: ""
+    409: "Email in use"
 }
 
 const HttpError = (status, message = errorMessageList[status]) =>{
