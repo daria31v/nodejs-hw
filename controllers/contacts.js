@@ -4,18 +4,20 @@ const { HttpError, ctrWrapper } = require("../helpers");
 
 const getAll = async (req, res) => {
   const { _id: owner } = req.user;
-  console.log(req.query);
-  const { page = 1, limit = 20, 
-    // favorite 
-  } = req.query;
+  const { page = 1, limit = 20, favorite } = req.query;
   const skip = (page - 1) * limit;
-
-  const listAll = await Contact.find({ owner}, 
-    // favorite: true}, 
-    "", {
+  if (favorite) {
+    const listFavorite = await Contact.find({ owner, favorite: true }, "", {
+      skip,
+      limit,
+    });
+    return res.json(listFavorite);
+  }
+  const listAll = await Contact.find({ owner }, "", {
     skip,
     limit,
   });
+
   res.status(200).json(listAll);
 };
 
@@ -72,7 +74,6 @@ const deleteById = async (req, res) => {
 
 module.exports = {
   getAll: ctrWrapper(getAll),
-  
   getById: ctrWrapper(getById),
   addNewContact: ctrWrapper(addNewContact),
   updateById: ctrWrapper(updateById),

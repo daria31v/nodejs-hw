@@ -7,13 +7,11 @@ const { HttpError, ctrWrapper } = require("../helpers");
 const register = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-
   if (user) {
     throw HttpError(409);
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const newUser = await User.create({ ...req.body, password: hashPassword });
-
   res.status(201).json({
     user: {
       email: newUser.email,
@@ -25,18 +23,13 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-
   if (!user) {
     throw HttpError(401, "Email or password is wrong");
   }
-  // if(!user.password){
-  //   throw HttpError(401, "Email or password is wrong");
-  // }
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) {
     throw HttpError(401, "Email or password is wrong");
   }
-
   const playload = {
     id: user._id,
   };
@@ -54,11 +47,10 @@ const login = async (req, res) => {
 
 const getCurrent = async (req, res) => {
   const { email, subscription, token } = req.user;
-
   if (!token) {
     throw HttpError(401, "Not authorized");
   }
-  res.json({ email, subscription });
+  res.status(200).json({ email, subscription });
 };
 
 const logout = async (req, res) => {
@@ -71,17 +63,16 @@ const logout = async (req, res) => {
 };
 
 const updateSubscription = async (req, res) => {
-  const { token, subscription } = req.user;
-  console.log(subscription);
-  const result = await User.findOneAndUpdate(token, subscription, { new: true });
+  const { token } = req.user;
+  const result = await User.findOneAndUpdate(token, req.body, { new: true });
   if (!result) {
     throw HttpError(404);
   }
   res.status(200).json({
     user: {
       email: result.email,
-      subscription: result.subscription
-    }
+      subscription: result.subscription,
+    },
   });
 };
 

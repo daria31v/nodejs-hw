@@ -16,7 +16,7 @@ const userSchema = new Schema(
     },
     email: {
       type: String,
-      match: emailRegexp,
+      match: [emailRegexp, "is not a valid email"],
       required: [true, "Email is required"],
       unique: true,
     },
@@ -45,13 +45,13 @@ const schemaJoiLogin = Joi.object({
 });
 
 const schemaJoiCurrentUser = Joi.object({
-  email: Joi.string().pattern(emailRegexp).required(),
-  subscription: Joi.string().validate(...userTarif),
+  email: Joi.string().pattern(emailRegexp),
+  token: Joi.string().required(),
 });
 
 const schemaJoiUpdate = Joi.object({
-  subscription: Joi.string().validate(...userTarif),
-}).required();
+  subscription: Joi.string().valid(...userTarif),
+});
 
 const schemas = {
   schemaJoiRegister,

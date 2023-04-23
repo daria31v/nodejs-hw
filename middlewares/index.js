@@ -3,14 +3,14 @@ const validateBodyUpdateContact = require("./validateUpdateContact");
 const isValidId = require("./isValidId");
 const validateBodyNewUser = require("./validateBodyNewUser");
 const authentication = require("./authentication");
-const validateBodyUpdate = require("./validateUpdateUser");
+const validateUpdateUser = require("./validateUpdateUser");
 
 module.exports = {
   validateBodyNewContact,
   validateBodyUpdateContact,
-  validateBodyUpdate,
+  validateUpdateUser,
   isValidId,
   validateBodyNewUser,
   authentication,
-//   validateBodyCurrentUser,
+
 };
