@@ -12,4 +12,6 @@ const validateBodyUpdateContact = (schema) => {
   return func;
 };
 
+
+
 module.exports = validateBodyUpdateContact;

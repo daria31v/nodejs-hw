@@ -1,7 +1,6 @@
 const errorMessageList = {
-    400: "",
+    400: "Bad Request",
     401: "Not authorized",
-    403: "Forbidden",
     404: "Not found",
     409: "Email in use"
 }

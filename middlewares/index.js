@@ -1,9 +1,16 @@
-const validateBodyNewContact = require('./validateBody');
-const validateBodyUpdateContact = require('./validateUpdate');
+const validateBodyNewContact = require("./validateBody");
+const validateBodyUpdateContact = require("./validateUpdateContact");
 const isValidId = require("./isValidId");
-const validateBodyNewUser = require('./validateBodyNewUser');
-const authentication = require("./authentication")
+const validateBodyNewUser = require("./validateBodyNewUser");
+const authentication = require("./authentication");
+const validateBodyUpdate = require("./validateUpdateUser");
 
 module.exports = {
-    validateBodyNewContact, validateBodyUpdateContact, isValidId, validateBodyNewUser, authentication
+  validateBodyNewContact,
+  validateBodyUpdateContact,
+  validateBodyUpdate,
+  isValidId,
+  validateBodyNewUser,
+  authentication,
+//   validateBodyCurrentUser,
 };

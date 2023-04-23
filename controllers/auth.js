@@ -15,8 +15,10 @@ const register = async (req, res) => {
   const newUser = await User.create({ ...req.body, password: hashPassword });
 
   res.status(201).json({
-    email: newUser.email,
-    subscription: newUser.subscription,
+    user: {
+      email: newUser.email,
+      subscription: newUser.subscription,
+    },
   });
 };
 
@@ -39,7 +41,7 @@ const login = async (req, res) => {
     id: user._id,
   };
   const token = jwt.sign(playload, SECRET_KEY, { expiresIn: "3d" });
-  await User.findByIdAndUpdate(user._id, {token})
+  await User.findByIdAndUpdate(user._id, { token });
 
   res.status(200).json({
     token,
@@ -52,36 +54,41 @@ const login = async (req, res) => {
 
 const getCurrent = async (req, res) => {
   const { email, subscription, token } = req.user;
-  
+
   if (!token) {
-      throw HttpError(401, "Not authorized");
-    }
+    throw HttpError(401, "Not authorized");
+  }
   res.json({ email, subscription });
 };
 
 const logout = async (req, res) => {
-  const {_id } = req.user;
-  await User.findByIdAndRemove(_id, { token: "" });
-
-  // if (!_id) {
-  //   throw HttpError(401, "Not authorized");
-  // }
-  res.status(204)
+  const { _id } = req.user;
+  const resultLogout = await User.findByIdAndRemove(_id, { token: "" });
+  if (!resultLogout) {
+    throw HttpError(401, "Not authorized");
+  }
+  res.status(204).json("");
 };
 
 const updateSubscription = async (req, res) => {
-  const {_id} = req.user;
-  const result = await User.findByIdAndUpdate(_id, req.body, {new: true});
-  if(!result){
-    throw HttpError(404)
+  const { token, subscription } = req.user;
+  console.log(subscription);
+  const result = await User.findOneAndUpdate(token, subscription, { new: true });
+  if (!result) {
+    throw HttpError(404);
   }
-  res.status(200).json(result)
-}
+  res.status(200).json({
+    user: {
+      email: result.email,
+      subscription: result.subscription
+    }
+  });
+};
 
 module.exports = {
   register: ctrWrapper(register),
   login: ctrWrapper(login),
   logout: ctrWrapper(logout),
   getCurrent: ctrWrapper(getCurrent),
-  updateSubscription: ctrWrapper(updateSubscription)
+  updateSubscription: ctrWrapper(updateSubscription),
 };

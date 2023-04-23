@@ -4,7 +4,7 @@ const router = express.Router();
 const controllers = require("../../controllers/auth");
 
 const { schemas } = require("../../models/user");
-const { validateBodyNewUser, authentication } = require("../../middlewares");
+const { validateBodyNewUser, authentication, validateBodyUpdate } = require("../../middlewares");
 
 
 router.post("/register", validateBodyNewUser(schemas.schemaJoiRegister), controllers.register);
@@ -15,9 +15,6 @@ router.get("/current", authentication, controllers.getCurrent);
 
 router.post("/logout", authentication, controllers.logout);
 
-router.patch("/subscription", authentication, controllers.updateSubscription)
-
-
-
+router.patch("/", authentication, validateBodyUpdate(schemas.schemaJoiUpdate), controllers.updateSubscription)
 
 module.exports = router;
