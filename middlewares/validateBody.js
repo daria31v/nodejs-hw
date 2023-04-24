@@ -16,8 +16,7 @@ const validateBodyNewContact = (schema) => {
       throw HttpError(400, `missing required ${resultFilter.join(",")} fields`);
     
     } else if (error && fields.length === CONSTANT.length) {
-      console.log(error);
-       throw HttpError(400, error.message)
+      throw HttpError(400, error.message)
     }
     next();
   };
