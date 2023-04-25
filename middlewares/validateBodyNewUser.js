@@ -1,11 +1,11 @@
 const { HttpError } = require("../helpers");
 
-const validateBodyNewContact = (schema) => {
+const validateBodyNewUser = (schema) => {
   const validation = (req, res, next) => {
-    const newContact = req.body;
-    const { error } = schema.validate(newContact);
-    const fields = Object.keys(newContact);
-    const CONSTANT = ["name", "email", "phone"];
+    const newUser = req.body;
+    const { error } = schema.validate(newUser);
+    const fields = Object.keys(newUser);
+    const CONSTANT = ["email", "password"];
 
     if (error && fields.length < CONSTANT.length){
       
@@ -24,4 +24,4 @@ const validateBodyNewContact = (schema) => {
   return validation;
 };
 
-module.exports = validateBodyNewContact;
+module.exports = validateBodyNewUser;
