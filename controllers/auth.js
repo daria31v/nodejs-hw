@@ -4,6 +4,7 @@ const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs/promises");
 
+
 const { User } = require("../models/user");
 const { SECRET_KEY } = process.env;
 const { HttpError, ctrWrapper } = require("../helpers");
@@ -90,21 +91,18 @@ const updateSubscription = async (req, res) => {
 
 const updateAvatar = async (req, res) => {
   const { token, _id } = req.user;
+  console.log(token);
   const { path: tempUpload, originalname } = req.file;
-  const filename = `user_${_id}_avatar_${originalname}`;
+  const filename = `user_-_${_id}_${originalname}`;
 
   const resultUpload = path.join(avatarDir, filename);
   await fs.rename(tempUpload, resultUpload);
 
-  const avatarURL = path.join("avatars", filename);
-  if (!avatarURL) {
-    throw HttpError(401);
-  }
-
+  const avatarURL = path.join("avatars", resultUpload);
   await User.findOneAndUpdate(token, { avatarURL });
 
   res.status(200).json({
-    avatarURL,
+    avatarURL
   });
 };
 
