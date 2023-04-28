@@ -24,6 +24,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => { 
+  console.log(err);
   const { status = 500, message = 'Internal server error' } = err;
   res.status(status).json({ message });
   next();
