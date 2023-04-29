@@ -18,12 +18,12 @@ const register = async (req, res) => {
     throw HttpError(409);
   }
   const hashPassword = await bcrypt.hash(password, 10);
-  const avatarUrl = gravatar.url(email);
-
+  const avatarURL = gravatar.url(email);
+  
   const newUser = await User.create({
     ...req.body,
     password: hashPassword,
-    avatarUrl,
+    avatarURL,
   });
   res.status(201).json({
     user: {
@@ -94,10 +94,11 @@ const updateAvatar = async (req, res) => {
   const { path: tempUpload, originalname } = req.file;
   const filename = `user_-_${_id}_${originalname}`;
   const resultUpload = path.join(avatarDir, filename);
+    
   await fs.rename(tempUpload, resultUpload);
 
   const avatarURL = path.join("avatars", resultUpload);
-  await User.findOneAndUpdate(token, { avatarURL });
+  await User.findOneAndUpdate({token}, { avatarURL });
   
   (async function () {
     const image = await Jimp.read(resultUpload)
@@ -108,7 +109,7 @@ const updateAvatar = async (req, res) => {
   })();
 
   res.status(200).json({
-    avatarURL,
+    avatarURL,    
   });
 };
 
