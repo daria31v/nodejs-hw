@@ -25,6 +25,7 @@ const userSchema = new Schema(
       enum: userTarif,
       default: "starter",
     },
+    avatarURL: String,
     token: String,
   },
   { versionKey: false }

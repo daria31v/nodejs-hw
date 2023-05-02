@@ -1,8 +1,16 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs/promises");
+const Jimp = require("jimp");
+const { nanoid } = require("nanoid");
+
 const { User } = require("../models/user");
 const { SECRET_KEY } = process.env;
 const { HttpError, ctrWrapper } = require("../helpers");
+
+const avatarDir = path.join(__dirname, "../", "public", "avatars");
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -11,7 +19,13 @@ const register = async (req, res) => {
     throw HttpError(409);
   }
   const hashPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
   res.status(201).json({
     user: {
       email: newUser.email,
@@ -76,10 +90,36 @@ const updateSubscription = async (req, res) => {
   });
 };
 
+const updateAvatar = async (req, res) => {
+  const { token } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const nanoidId = nanoid(3);
+  const extention = path.extname(originalname);
+  const basename = path.basename(originalname, extention);
+  const newName = basename + "-" + nanoidId + extention;
+  const filename = `${newName}`;
+  const resultUpload = path.join(avatarDir, filename);
+  await fs.rename(tempUpload, resultUpload);
+
+  const avatarURL = path.join("avatars", filename);
+  await User.findOneAndUpdate({ token }, { avatarURL });
+
+  (async function () {
+    const image = await Jimp.read(resultUpload);
+    image.resize(250, 250);
+    image.write(resultUpload);
+  })();
+
+  res.status(200).json({
+    avatarURL,
+  });
+};
+
 module.exports = {
   register: ctrWrapper(register),
   login: ctrWrapper(login),
   logout: ctrWrapper(logout),
   getCurrent: ctrWrapper(getCurrent),
   updateSubscription: ctrWrapper(updateSubscription),
+  updateAvatar: ctrWrapper(updateAvatar),
 };
