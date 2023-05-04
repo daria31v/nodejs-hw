@@ -115,6 +115,19 @@ const updateAvatar = async (req, res) => {
   });
 };
 
+const verifiToken = async (req, res) => {
+  // verificationToken  = null;
+  // verify = true;
+  // Status: 404
+  // ResponseBody: {
+  //   message: 'User not found'
+  // }
+  // Status: 200
+  // ResponseBody: {
+  //   message: 'Verification successful',
+  // }
+}
+
 module.exports = {
   register: ctrWrapper(register),
   login: ctrWrapper(login),
@@ -122,4 +135,5 @@ module.exports = {
   getCurrent: ctrWrapper(getCurrent),
   updateSubscription: ctrWrapper(updateSubscription),
   updateAvatar: ctrWrapper(updateAvatar),
+  verifiToken: ctrWrapper(verifiToken),
 };

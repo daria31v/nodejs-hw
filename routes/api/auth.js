@@ -17,4 +17,6 @@ router.patch("/", authentication, validateUpdateUser(schemas.schemaJoiUpdate), c
 
 router.patch("/avatars", authentication, upload.single("avatar"), controllers.updateAvatar);
 
+router.get("/verify/:verificationToken", authentication);
+
 module.exports = router;
