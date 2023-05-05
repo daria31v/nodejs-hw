@@ -3,9 +3,13 @@ const express = require("express");
 const router = express.Router();
 const controllers = require("../../controllers/auth");
 const { schemas } = require("../../models/user");
-const { validateBodyNewUser, authentication, validateUpdateUser, upload } = require("../../middlewares");
+const { validateBodyNewUser, authentication, validateUpdateUser, upload, validateBodyUpdateContact } = require("../../middlewares");
 
 router.post("/register", validateBodyNewUser(schemas.schemaJoiRegister), controllers.register);
+
+router.get("/verify/:verficationToken", controllers.verifyEmailUser);
+
+router.post("/verify", validateBodyUpdateContact(schemas.schemaJoiEmail), controllers.resentVerifyEmail);
 
 router.post("/login", validateBodyNewUser(schemas.schemaJoiLogin), controllers.login);
 
