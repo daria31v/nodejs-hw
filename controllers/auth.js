@@ -1,3 +1,4 @@
+"use strict";
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
@@ -5,15 +6,19 @@ const path = require("path");
 const fs = require("fs/promises");
 const Jimp = require("jimp");
 const { nanoid } = require("nanoid");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const { User } = require("../models/user");
-const { SECRET_KEY, BASE_URL } = process.env;
-const { HttpError, ctrWrapper, emailSend } = require("../helpers");
+const { SECRET_KEY, BASE_URL, SENDER_EMAIL, META_PASSWORD } = process.env;
+const { HttpError, ctrWrapper} = require("../helpers");
 
 const avatarDir = path.join(__dirname, "../", "public", "avatars");
 
+
 const register = async (req, res) => {
   const { email, password } = req.body;
+  
   const user = await User.findOne({ email });
   if (user) {
     throw HttpError(409);
@@ -27,28 +32,46 @@ const register = async (req, res) => {
     avatarURL,
     verificationToken,
   });
-  
-    const verifyEmail = {
-    to: email,
+  // *******************************************
+  const transporter = nodemailer.createTransport({
+    host: "smtp.meta.ua",
+    port: 465,
+    secure: false,
+    auth: {
+      user: SENDER_EMAIL,
+      pass: META_PASSWORD,
+    },
+    tls: { rejectUnauthorized: false },
+   
+  });
+  // const transporter = nodemailer.createTransport(config);
+  const verifyEmail = {
+    to: `${email}`,
+    from: SENDER_EMAIL,
     subject: "Verify email",
+    text: "Verify email",
     html: `<a target="_blank" href="${BASE_URL}/users/verify/${verificationToken}>Click verify email</a>`,
   };
-  console.log(verifyEmail);
+  transporter
+  .sendMail(verifyEmail)
+  .then((info) => console.log(info))
+  .catch((err) => console.log(err));
+  // console.log(verifyEmail);
+  // sendEmail(verifyEmail)
+  // *********************************************
 
-  await emailSend(verifyEmail);
-
-     res.status(201).json({
-        user: {
-          email: newUser.email,
-          subscription: newUser.subscription,
-        },
-      });
+  res.status(201).json({
+    user: {
+      email: newUser.email,
+      subscription: newUser.subscription,
+    },
+  });
 };
 
 const verifyEmailUser = async (req, res) => {
   const { verificationToken } = req.params;
   const user = await User.findOne(verificationToken);
- 
+
   if (!user) {
     throw HttpError(404, "User not found");
   }
@@ -57,27 +80,27 @@ const verifyEmailUser = async (req, res) => {
     verificationToken: null,
   });
 
-  res.status(200).json({message: "Verification successful" });
+  res.status(200).json({ message: "Verification successful" });
 };
 
 const resentVerifyEmail = async (req, res) => {
   const { email } = req.body;
-   const user = await User.findOne({ email });
-  
+  const user = await User.findOne({ email });
+
   if (!user) {
     throw HttpError(404);
   }
   if (user.verify) {
-    throw HttpError(400, "Verification has already been passed" );
+    throw HttpError(400, "Verification has already been passed");
   }
-  const verifyEmail = {
-    to: email,
-    subject: "Verify email",
-    html: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}>Click verify email</a>`,
-  };
-  
-  await emailSend(verifyEmail);
-  
+  // const verifyEmail = {
+  //   to: email,
+  //   subject: "Verify email",
+  //   text: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}>Click verify email</a>`,
+  // };
+
+  // await emailSend(verifyEmail);
+
   res.status(200).json({ message: "Verification email sent" });
 };
 
