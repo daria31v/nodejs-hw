@@ -1,4 +1,3 @@
-"use strict";
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const gravatar = require("gravatar");
@@ -11,14 +10,24 @@ require("dotenv").config();
 
 const { User } = require("../models/user");
 const { SECRET_KEY, BASE_URL, SENDER_EMAIL, META_PASSWORD } = process.env;
-const { HttpError, ctrWrapper} = require("../helpers");
+const { HttpError, ctrWrapper } = require("../helpers");
 
 const avatarDir = path.join(__dirname, "../", "public", "avatars");
+const transporter = nodemailer.createTransport({
+    host: "smtp.meta.ua",
+    port: 465,
+    secure: true,
+    auth: {
+      user: SENDER_EMAIL,
+      pass: META_PASSWORD,
+    },
+    tls: { rejectUnauthorized: false },
+  });
 
 
 const register = async (req, res) => {
   const { email, password } = req.body;
-  
+
   const user = await User.findOne({ email });
   if (user) {
     throw HttpError(409);
@@ -33,33 +42,27 @@ const register = async (req, res) => {
     verificationToken,
   });
   // *******************************************
-  const transporter = nodemailer.createTransport({
-    host: "smtp.meta.ua",
-    port: 465,
-    secure: false,
-    auth: {
-      user: SENDER_EMAIL,
-      pass: META_PASSWORD,
-    },
-    tls: { rejectUnauthorized: false },
-   
-  });
-  // const transporter = nodemailer.createTransport(config);
+    
   const verifyEmail = {
     to: `${email}`,
     from: SENDER_EMAIL,
     subject: "Verify email",
-    text: "Verify email",
     html: `<a target="_blank" href="${BASE_URL}/users/verify/${verificationToken}>Click verify email</a>`,
+    headers: {
+      "Content-Type": "text/html",
+    },
   };
-  transporter
-  .sendMail(verifyEmail)
-  .then((info) => console.log(info))
-  .catch((err) => console.log(err));
-  // console.log(verifyEmail);
-  // sendEmail(verifyEmail)
-  // *********************************************
+  
+  transporter.sendMail(verifyEmail)
+  //   , function (error, info) {
+  //   if (error) {
+  //     console.log(error);
+  //   } else {
+  //     console.log("Email sent: " + info.response);
+  //   }
+  // });
 
+  // *********************************************
   res.status(201).json({
     user: {
       email: newUser.email,
@@ -93,14 +96,25 @@ const resentVerifyEmail = async (req, res) => {
   if (user.verify) {
     throw HttpError(400, "Verification has already been passed");
   }
-  // const verifyEmail = {
-  //   to: email,
-  //   subject: "Verify email",
-  //   text: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}>Click verify email</a>`,
-  // };
-
-  // await emailSend(verifyEmail);
-
+  const verifyEmail = {
+    to: `${email}`,
+    from: SENDER_EMAIL,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}>Click verify email</a>`,
+    headers: {
+      "Content-Type": "text/html",
+    },
+  };
+  
+  transporter.sendMail(verifyEmail)
+  // , function (error, info) {
+    //   if (error) {
+    //     console.log(error);
+    //   } else {
+    //     console.log("Email sent: " + info.response);
+    //   }
+    // });
+  
   res.status(200).json({ message: "Verification email sent" });
 };
 
