@@ -7,7 +7,7 @@ const { validateBodyNewUser, authentication, validateUpdateUser, upload, validat
 
 router.post("/register", validateBodyNewUser(schemas.schemaJoiRegister), controllers.register);
 
-router.get("/verify/:verficationToken", controllers.verifyEmailUser);
+router.get("/verify/:verificationToken", controllers.verifyEmailUser);
 
 router.post("/verify", validateBodyUpdateContact(schemas.schemaJoiEmail), controllers.resentVerifyEmail);
 

@@ -9,21 +9,11 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const { User } = require("../models/user");
-const { SECRET_KEY, BASE_URL, SENDER_EMAIL, META_PASSWORD } = process.env;
-const { HttpError, ctrWrapper } = require("../helpers");
+const { SECRET_KEY, BASE_URL, SENDER_EMAIL, MAILTRAP_USER, MAILTRAP_PASS } =
+  process.env;
+const { HttpError, ctrWrapper, sendEmails } = require("../helpers");
 
 const avatarDir = path.join(__dirname, "../", "public", "avatars");
-const transporter = nodemailer.createTransport({
-    host: "smtp.meta.ua",
-    port: 465,
-    secure: true,
-    auth: {
-      user: SENDER_EMAIL,
-      pass: META_PASSWORD,
-    },
-    tls: { rejectUnauthorized: false },
-  });
-
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -42,27 +32,48 @@ const register = async (req, res) => {
     verificationToken,
   });
   // *******************************************
-    
-  const verifyEmail = {
+  // const transporter = nodemailer.createTransport({
+  //   host: "smtp.meta.ua",
+  //   port: 465,
+  //   secure: true,
+  //   auth: {
+  //     user: SENDER_EMAIL,
+  //     pass: META_PASSWORD,
+  //   },
+  //   tls: { rejectUnauthorized: false },
+  // });
+  // *******************************************
+  // const transporter = nodemailer.createTransport({
+  //   host: "sandbox.smtp.mailtrap.io",
+  //   port: 2525,
+  //   auth: {
+  //     user: MAILTRAP_USER,
+  //     pass: MAILTRAP_PASS,
+  //   }
+  // });
+  await sendEmails({
     to: `${email}`,
     from: SENDER_EMAIL,
-    subject: "Verify email",
-    html: `<a target="_blank" href="${BASE_URL}/users/verify/${verificationToken}>Click verify email</a>`,
+    subject: `Welcome ${email}`,
+    html: `<table>
+      <thead>
+          <tr>
+              <th >Please verify your email - follow the link below</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td><a target="_blank" href="${BASE_URL}/users/verify/${verificationToken}">Click me</a></td>      
+          </tr>
+      </tbody>
+  </table`,
     headers: {
       "Content-Type": "text/html",
     },
-  };
-  
-  transporter.sendMail(verifyEmail)
-  //   , function (error, info) {
-  //   if (error) {
-  //     console.log(error);
-  //   } else {
-  //     console.log("Email sent: " + info.response);
-  //   }
-  // });
+  })
+    .then((info) => console.log(info, "Email sent successesful!!!"))
+    .catch((err) => console.error(err));
 
-  // *********************************************
   res.status(201).json({
     user: {
       email: newUser.email,
@@ -73,8 +84,12 @@ const register = async (req, res) => {
 
 const verifyEmailUser = async (req, res) => {
   const { verificationToken } = req.params;
-  const user = await User.findOne(verificationToken);
-
+  console.log(verificationToken);
+  const user = await User.findOne({ verificationToken: verificationToken });
+  
+  if (user === null) {
+    throw HttpError(401, "Invalid verification token");
+  }
   if (!user) {
     throw HttpError(404, "User not found");
   }
@@ -96,25 +111,38 @@ const resentVerifyEmail = async (req, res) => {
   if (user.verify) {
     throw HttpError(400, "Verification has already been passed");
   }
-  const verifyEmail = {
-    to: `${email}`,
-    from: SENDER_EMAIL,
-    subject: "Verify email",
-    html: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}>Click verify email</a>`,
-    headers: {
-      "Content-Type": "text/html",
+  const transporter = nodemailer.createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: MAILTRAP_USER,
+      pass: MAILTRAP_PASS,
     },
-  };
-  
-  transporter.sendMail(verifyEmail)
-  // , function (error, info) {
-    //   if (error) {
-    //     console.log(error);
-    //   } else {
-    //     console.log("Email sent: " + info.response);
-    //   }
-    // });
-  
+  });
+  transporter
+    .sendMail({
+      to: `${email}`,
+      from: SENDER_EMAIL,
+      subject: "Verify email",
+      html: `<table>
+      <thead>
+          <tr>
+              <th >Please verify your email - follow the link below</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td><a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}">Click me</a></td>      
+          </tr>
+      </tbody>
+  </table`,
+      headers: {
+        "Content-Type": "text/html",
+      },
+    })
+    .then((info) => console.log(info, "Email sent successesful!!!"))
+    .catch((err) => console.error(err));
+
   res.status(200).json({ message: "Verification email sent" });
 };
 
@@ -125,7 +153,7 @@ const login = async (req, res) => {
     throw HttpError(401, "Email or password is wrong");
   }
 
-  if (!user.verify) {
+  if (user.verify === false) {
     throw HttpError(401, " Emailnot verified");
   }
 
