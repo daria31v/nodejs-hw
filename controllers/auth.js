@@ -5,12 +5,11 @@ const path = require("path");
 const fs = require("fs/promises");
 const Jimp = require("jimp");
 const { nanoid } = require("nanoid");
-const nodemailer = require("nodemailer");
+
 require("dotenv").config();
 
 const { User } = require("../models/user");
-const { SECRET_KEY, BASE_URL, SENDER_EMAIL, MAILTRAP_USER, MAILTRAP_PASS } =
-  process.env;
+const { SECRET_KEY, BASE_URL, SENDER_EMAIL } = process.env;
 const { HttpError, ctrWrapper, sendEmails } = require("../helpers");
 
 const avatarDir = path.join(__dirname, "../", "public", "avatars");
@@ -31,26 +30,7 @@ const register = async (req, res) => {
     avatarURL,
     verificationToken,
   });
-  // *******************************************
-  // const transporter = nodemailer.createTransport({
-  //   host: "smtp.meta.ua",
-  //   port: 465,
-  //   secure: true,
-  //   auth: {
-  //     user: SENDER_EMAIL,
-  //     pass: META_PASSWORD,
-  //   },
-  //   tls: { rejectUnauthorized: false },
-  // });
-  // *******************************************
-  // const transporter = nodemailer.createTransport({
-  //   host: "sandbox.smtp.mailtrap.io",
-  //   port: 2525,
-  //   auth: {
-  //     user: MAILTRAP_USER,
-  //     pass: MAILTRAP_PASS,
-  //   }
-  // });
+
   await sendEmails({
     to: `${email}`,
     from: SENDER_EMAIL,
@@ -71,7 +51,7 @@ const register = async (req, res) => {
       "Content-Type": "text/html",
     },
   })
-    .then((info) => console.log(info, "Email sent successesful!!!"))
+    .then((info) => console.log(info))
     .catch((err) => console.error(err));
 
   res.status(201).json({
@@ -86,7 +66,7 @@ const verifyEmailUser = async (req, res) => {
   const { verificationToken } = req.params;
   console.log(verificationToken);
   const user = await User.findOne({ verificationToken: verificationToken });
-  
+
   if (user === null) {
     throw HttpError(401, "Invalid verification token");
   }
@@ -106,25 +86,17 @@ const resentVerifyEmail = async (req, res) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw HttpError(404);
+    throw HttpError(400);
   }
   if (user.verify) {
     throw HttpError(400, "Verification has already been passed");
   }
-  const transporter = nodemailer.createTransport({
-    host: "sandbox.smtp.mailtrap.io",
-    port: 2525,
-    auth: {
-      user: MAILTRAP_USER,
-      pass: MAILTRAP_PASS,
-    },
-  });
-  transporter
-    .sendMail({
-      to: `${email}`,
-      from: SENDER_EMAIL,
-      subject: "Verify email",
-      html: `<table>
+
+  await sendEmails({
+    to: `${email}`,
+    from: SENDER_EMAIL,
+    subject: `Welcome again ${email}`,
+    html: `<table>
       <thead>
           <tr>
               <th >Please verify your email - follow the link below</th>
@@ -136,11 +108,11 @@ const resentVerifyEmail = async (req, res) => {
           </tr>
       </tbody>
   </table`,
-      headers: {
-        "Content-Type": "text/html",
-      },
-    })
-    .then((info) => console.log(info, "Email sent successesful!!!"))
+    headers: {
+      "Content-Type": "text/html",
+    },
+  })
+    .then((info) => console.log(info))
     .catch((err) => console.error(err));
 
   res.status(200).json({ message: "Verification email sent" });
@@ -149,12 +121,9 @@ const resentVerifyEmail = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email, verify: true });
-  if (!user || !user.verify) {
-    throw HttpError(401, "Email or password is wrong");
-  }
 
-  if (user.verify === false) {
-    throw HttpError(401, " Emailnot verified");
+  if (!user || !user.verify) {
+    throw HttpError(401, "Email not verified");
   }
 
   const passwordCompare = await bcrypt.compare(password, user.password);
