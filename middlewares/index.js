@@ -5,7 +5,7 @@ const validateBodyNewUser = require("./validateBodyNewUser");
 const authentication = require("./authentication");
 const validateUpdateUser = require("./validateUpdateUser");
 const upload = require("./upload");
-
+const validateVerifyEmail = require("./validateVerifyEmail");
 module.exports = {
   validateBodyNewContact,
   validateBodyUpdateContact,
@@ -14,5 +14,5 @@ module.exports = {
   validateBodyNewUser,
   authentication,
   upload,
-
+  validateVerifyEmail,
 };

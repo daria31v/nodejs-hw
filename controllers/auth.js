@@ -6,26 +6,54 @@ const fs = require("fs/promises");
 const Jimp = require("jimp");
 const { nanoid } = require("nanoid");
 
+require("dotenv").config();
+
 const { User } = require("../models/user");
-const { SECRET_KEY } = process.env;
-const { HttpError, ctrWrapper } = require("../helpers");
+const { SECRET_KEY, BASE_URL, SENDER_EMAIL } = process.env;
+const { HttpError, ctrWrapper, sendEmails } = require("../helpers");
 
 const avatarDir = path.join(__dirname, "../", "public", "avatars");
 
 const register = async (req, res) => {
   const { email, password } = req.body;
+
   const user = await User.findOne({ email });
   if (user) {
     throw HttpError(409);
   }
   const hashPassword = await bcrypt.hash(password, 10);
   const avatarURL = gravatar.url(email);
-
+  const verificationToken = nanoid(6);
   const newUser = await User.create({
     ...req.body,
     password: hashPassword,
     avatarURL,
+    verificationToken,
   });
+
+  await sendEmails({
+    to: `${email}`,
+    from: SENDER_EMAIL,
+    subject: `Welcome ${email}`,
+    html: `<table>
+      <thead>
+          <tr>
+              <th >Please verify your email - follow the link below</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td><a target="_blank" href="${BASE_URL}/users/verify/${verificationToken}">Click me</a></td>      
+          </tr>
+      </tbody>
+  </table`,
+    headers: {
+      "Content-Type": "text/html",
+    },
+  })
+    .then((info) => console.log(info))
+    .catch((err) => console.error(err));
+
   res.status(201).json({
     user: {
       email: newUser.email,
@@ -34,12 +62,70 @@ const register = async (req, res) => {
   });
 };
 
+const verifyEmailUser = async (req, res) => {
+  const { verificationToken } = req.params;
+  console.log(verificationToken);
+  const user = await User.findOne({ verificationToken: verificationToken });
+
+  if (user === null) {
+    throw HttpError(401, "Invalid verification token");
+  }
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
+
+  res.status(200).json({ message: "Verification successful" });
+};
+
+const resentVerifyEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw HttpError(400);
+  }
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+
+  await sendEmails({
+    to: `${email}`,
+    from: SENDER_EMAIL,
+    subject: `Welcome again ${email}`,
+    html: `<table>
+      <thead>
+          <tr>
+              <th >Please verify your email - follow the link below</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr>
+              <td><a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}">Click me</a></td>      
+          </tr>
+      </tbody>
+  </table`,
+    headers: {
+      "Content-Type": "text/html",
+    },
+  })
+    .then((info) => console.log(info))
+    .catch((err) => console.error(err));
+
+  res.status(200).json({ message: "Verification email sent" });
+};
+
 const login = async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw HttpError(401, "Email or password is wrong");
+  const user = await User.findOne({ email, verify: true });
+
+  if (!user || !user.verify) {
+    throw HttpError(401, "Email not verified");
   }
+
   const passwordCompare = await bcrypt.compare(password, user.password);
   if (!passwordCompare) {
     throw HttpError(401, "Email or password is wrong");
@@ -47,6 +133,7 @@ const login = async (req, res) => {
   const playload = {
     id: user._id,
   };
+
   const token = jwt.sign(playload, SECRET_KEY, { expiresIn: "3d" });
   await User.findByIdAndUpdate(user._id, { token });
 
@@ -122,4 +209,6 @@ module.exports = {
   getCurrent: ctrWrapper(getCurrent),
   updateSubscription: ctrWrapper(updateSubscription),
   updateAvatar: ctrWrapper(updateAvatar),
+  verifyEmailUser: ctrWrapper(verifyEmailUser),
+  resentVerifyEmail: ctrWrapper(resentVerifyEmail),
 };
